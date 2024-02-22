@@ -1,4 +1,4 @@
-module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIn_last, //receive interface
+module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //receive interface
                dataOut, dataOut_val, dataOut_ready, packetLost); //send interface
     
     input clk, reset_b, dataIn_val, dataIN_last, dataOut_ready;
@@ -23,11 +23,11 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIn_last, //rec
     wire canMoveForward;
     wire [31:0] maskedInput;
     wire sequenceValid;
-    wire [4:0] currentStream;
+    wire [4:0] currentStreamTrimmed;
 
     integer i;
 
-    assign dataIn_ready = !(outputPending or receiverState == COMMIT_OUTPUT);
+    assign dataIn_ready = !(outputPending || receiverState == COMMIT_OUTPUT);
     assign dataOut_val = outputPending;
     assign packetLost = packetLostReg;
     assign dataOut = outputFinal;
@@ -36,14 +36,14 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIn_last, //rec
     assign sequenceValid = (currentSeq == seqs[currentStreamTrimmed] + 1);
 
     always @ (*) begin
-        if (!dataIn_last) 
+        if (!dataIN_last) 
             maskedInput = dataIn;
         else begin
             case (bytesLeft)
                 1 : maskedInput = {dataIn[31:24], 24'd0};
                 2 : maskedInput = {dataIn[31:16], 16'd0};
-                3 : maskedInput = {dataIn[31:8], 8'd'0};
-                4 : maskedInput = 
+                3 : maskedInput = {dataIn[31:8], 8'd0};
+                4 : maskedInput = dataIn;
                 default : maskedInput = 0; //Bad format, should not happen or should trigger error flag
             endcase
         end
@@ -67,26 +67,25 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIn_last, //rec
                     receiverState <= GET_2ND_WORD;
                 end
             GET_2ND_WORD:
-                if (canMoveFoward) begin
+                if (canMoveForward) begin
                     bytesLeft <= bytesLeft - 4;
                     currentSeq <= dataIn;
                     receiverState <= GET_DATA;
                     currentOutputIndex <= 0;
                 end
             GET_DATA:
-                if (canMoveFoward) begin
+                if (canMoveForward) begin
                     outputPrepare[currentOutputIndex*32 : currentOutputIndex:32+31] <= maskedInput;
                     currentOutputIndex <= currentOutputIndex + 1;
                     bytesLeft <= bytesLeft - 4;
-                    if (dataIn_last)
+                    if (dataIN_last)
                         receiverState <= COMMIT_OUTPUT;
-                        packetLost <= !sequenceValid
-                        seqs[currentSeqTrimmed]
-
                 end
             COMMIT_OUTPUT:
+                receiverState <= IDLE;
                 outputPrepare <= 296'd0;
                 outputFinal <= outputPrepare;
+                seqs[currentStreamTrimmed] <= currentSeq;
                 packetLostReg <= !sequenceValid;
                 outputPending <= 1'b1;
             endcase
