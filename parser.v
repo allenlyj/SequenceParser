@@ -3,13 +3,13 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIn_last, //rec
     
     input clk, reset_b, dataIn_val, dataIN_last, dataOut_ready;
     input [31:0] dataIn;
-    output dataIn_ready, dataOut_val;
-    output reg packetLost = 0;
+    output dataIn_ready, dataOut_val, packetLost;
     output [0:295] dataOut;
 
     reg [0:295] outputPrepare = 0;
     reg [0:295] outputFinal = 0;
     reg [31:0] seqs [0:31];
+    reg packetLostReg = 0;
     reg outputPending = 0;
     localparam [1:0] IDLE = 0;
     localparam [1:0] GET_2ND_WORD = 1;
@@ -29,9 +29,11 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIn_last, //rec
 
     assign dataIn_ready = !(outputPending or receiverState == COMMIT_OUTPUT);
     assign dataOut_val = outputPending;
+    assign packetLost = packetLostReg;
+    assign dataOut = outputFinal;
     assign canMoveForward = !outputPending & dataIn_val;
-    assign currentSeqTrimmed = currentSeq[4:0];
-    assign sequenceValid = (currentSeq == seqs[currentSeqTrimmed] + 1);
+    assign currentStreamTrimmed = currentStream[4:0];
+    assign sequenceValid = (currentSeq == seqs[currentStreamTrimmed] + 1);
 
     always @ (*) begin
         if (!dataIn_last) 
@@ -43,7 +45,6 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIn_last, //rec
                 3 : maskedInput = {dataIn[31:8], 8'd'0};
                 4 : maskedInput = 
                 default : maskedInput = 0; //Bad format, should not happen or should trigger error flag
-
             endcase
         end
     end
@@ -77,14 +78,23 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIn_last, //rec
                     outputPrepare[currentOutputIndex*32 : currentOutputIndex:32+31] <= maskedInput;
                     currentOutputIndex <= currentOutputIndex + 1;
                     bytesLeft <= bytesLeft - 4;
-                    if (dataIn_last) begin
+                    if (dataIn_last)
                         receiverState <= COMMIT_OUTPUT;
                         packetLost <= !sequenceValid
                         seqs[currentSeqTrimmed]
-                    end
 
                 end
+            COMMIT_OUTPUT:
+                outputPrepare <= 296'd0;
+                outputFinal <= outputPrepare;
+                packetLostReg <= !sequenceValid;
+                outputPending <= 1'b1;
             endcase
+
+            if (outputPending & dataOut_ready) begin
+                outputPending <= 1'b0;
+                packetLostReg <= 1'b0;
+            end
         end
 
 
