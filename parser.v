@@ -90,9 +90,9 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
                 end
             COMMIT_OUTPUT: begin
                 receiverState <= IDLE;
-                for (i = 0; i < 10; i = i+1) begin
-                    outputPrepare[i] <= 32'b0;
-                    outputFinal[i] <= outputPrepare[i];
+                for (j = 0; j < 10; j = j+1) begin
+                    outputPrepare[j] <= 32'b0;
+                    outputFinal[j] <= outputPrepare[j];
                 end
                 seqs[currentStreamTrimmed] <= currentSeq;
                 packetLostReg <= !sequenceValid;
