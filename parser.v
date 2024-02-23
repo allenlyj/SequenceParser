@@ -25,13 +25,9 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
     wire sequenceValid;
     wire [4:0] currentStreamTrimmed;
 
-    integer i;
-    genvar geni;
-
     assign dataIn_ready = !(outputPending || receiverState == COMMIT_OUTPUT);
     assign dataOut_val = outputPending;
     assign packetLost = packetLostReg;
-    assign dataOut = outputFinal;
     assign canMoveForward = !outputPending & dataIn_val;
     assign currentStreamTrimmed = currentStream[4:0];
     assign sequenceValid = (currentSeq == seqs[currentStreamTrimmed] + 1);
@@ -48,24 +44,23 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
         endcase
     end
 
-    for (geni = 0; geni < 10; geni = geni+1) generate
+    for (genvar i = 0; geni < 10; geni = geni+1) begin
         if (i != 9)
             assign dataOut[geni*32:geni*32+31] = outputFinal[geni];
         else
             assign dataOut[geni*32:geni*32+7] = outputFinal[geni][31:24];
-    endgenerate
+    end
 
     always @ (posedge clk)
         if (!reset_b) begin
             outputPending <= 0;
-            for (i = 0; i <= 31; i = i+1) begin
+            for (genvar i = 0; i <= 31; i = i+1) begin
                 seqs[i] <= 0;
             end
-            for (i = 0; i < 10; i = i + 1) begin
-                outputPrepare[i] <= 0
+            for (genvar i = 0; i < 10; i = i + 1) begin
+                outputPrepare[i] <= 0;
             end
             receiverState <= IDLE;
-            outputPrepare <= 0;
         end else begin
             // Only move forward if there is incoming data and no pending transaction
             case(receiverState)
