@@ -47,12 +47,12 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
         endcase
     end
 
-    for (i = 0; i < 10; i = i+1) begin
+    for (i = 0; i < 10; i = i+1) generate
         if (i != 9)
             assign dataOut[i*32:i*32+31] = outputFinal[i];
         else
             assign dataOut[i*32:i*32+7] = outputFinal[i][31:24];
-    end
+    endgenerate
 
     always @ (posedge clk)
         if (!reset_b) begin
@@ -89,10 +89,10 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
                 end
             COMMIT_OUTPUT: begin
                 receiverState <= IDLE;
-                for (i = 0; i < 10; i++) begin
+                for (i = 0; i < 10; i = i+1) begin
                     outputPrepare[i] <= 32'b0;
                     outputFinal[i] <= outputPrepare[i];
-                end;
+                end
                 seqs[currentStreamTrimmed] <= currentSeq;
                 packetLostReg <= !sequenceValid;
                 outputPending <= 1'b1;
