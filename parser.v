@@ -6,8 +6,8 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
     output dataIn_ready, dataOut_val, packetLost;
     output [0:295] dataOut;
 
-    reg [0:295] outputPrepare = 0;
-    reg [0:295] outputFinal = 0;
+    reg [31:0] outputPrepare [0:9];
+    reg [31:0] outputFinal [0:9];
     reg [31:0] seqs [0:31];
     reg packetLostReg = 0;
     reg outputPending = 0;
@@ -35,26 +35,32 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
     assign currentStreamTrimmed = currentStream[4:0];
     assign sequenceValid = (currentSeq == seqs[currentStreamTrimmed] + 1);
 
-    always @ (*) begin
-        if (!dataIN_last) 
-            maskedInput = dataIn;
-        else begin
-            case (bytesLeft)
-                1 : maskedInput = {dataIn[31:24], 24'd0};
-                2 : maskedInput = {dataIn[31:16], 16'd0};
-                3 : maskedInput = {dataIn[31:8], 8'd0};
-                4 : maskedInput = dataIn;
-                default : maskedInput = 0; //Bad format, should not happen or should trigger error flag
-            endcase
-        end
+    if (!dataIN_last) 
+        assign maskedInput = dataIn;
+    else begin
+        case (bytesLeft)
+            1 : assign maskedInput = {dataIn[31:24], 24'd0};
+            2 : assign maskedInput = {dataIn[31:16], 16'd0};
+            3 : assign maskedInput = {dataIn[31:8], 8'd0};
+            4 : assign maskedInput = dataIn;
+            default : assign maskedInput = 0; //Bad format, should not happen or should trigger error flag
+        endcase
+    end
+
+    for (i = 0; i < 10; i = i+1) begin
+        if (i != 9)
+            assign dataOut[i*32:i*32+31] = outputFinal[i];
+        else
+            assign dataOut[i*32:i*32+7] = outputFinal[i][31:24];
     end
 
     always @ (posedge clk)
         if (!reset_b) begin
             outputPending <= 0;
-            for (i = 0; i <= 31; i = i+1) begin
+            for (i = 0; i <= 31; i = i+1)
                 seqs[i] <= 0;
-            end
+            for (i = 0; i < 10; i = i + 1)
+                outputPrepare[i] <= 0;
             receiverState <= IDLE;
             outputPrepare <= 0;
         end else begin
@@ -75,19 +81,22 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
                 end
             GET_DATA:
                 if (canMoveForward) begin
-                    outputPrepare[currentOutputIndex*32 : currentOutputIndex:32+31] <= maskedInput;
+                    outputPrepare[currentOutputIndex] <= maskedInput;
                     currentOutputIndex <= currentOutputIndex + 1;
                     bytesLeft <= bytesLeft - 4;
                     if (dataIN_last)
                         receiverState <= COMMIT_OUTPUT;
                 end
-            COMMIT_OUTPUT:
+            COMMIT_OUTPUT: begin
                 receiverState <= IDLE;
-                outputPrepare <= 296'd0;
-                outputFinal <= outputPrepare;
+                for (i = 0; i < 10; i++) begin
+                    outputPrepare[i] <= 32'b0;
+                    outputFinal[i] <= outputPrepare[i];
+                end;
                 seqs[currentStreamTrimmed] <= currentSeq;
                 packetLostReg <= !sequenceValid;
                 outputPending <= 1'b1;
+            end
             endcase
 
             if (outputPending & dataOut_ready) begin
