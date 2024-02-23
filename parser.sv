@@ -45,11 +45,9 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
     end
 
     for (genvar i = 0; i < 10; i = i+1) begin
-        if (i != 9)
-            assign dataOut[i*32:i*32+31] = outputFinal[i];
-        else
-            assign dataOut[i*32:i*32+7] = outputFinal[i][31:24];
+        assign dataOut[i*32:i*32+31] = outputFinal[i];
     end
+    assign dataout[288:295] = outputFinal[9][31:24];
 
     always @ (posedge clk)
         if (!reset_b) begin
