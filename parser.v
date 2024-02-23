@@ -56,12 +56,14 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
     always @ (posedge clk)
         if (!reset_b) begin
             outputPending <= 0;
-            for (i = 0; i <= 31; i = i+1) begin
-                seqs[i] <= 0;
-            end
-            for (i = 0; i < 10; i = i + 1) begin
-                outputPrepare[i] <= 0;
-            end
+            generate 
+                for (i = 0; i <= 31; i = i+1) begin
+                    seqs[i] <= 0;
+                end
+                for (i = 0; i < 10; i = i + 1) begin
+                    outputPrepare[i] <= 0;
+                end
+            endgenerate
             receiverState <= IDLE;
         end else begin
             // Only move forward if there is incoming data and no pending transaction
