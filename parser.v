@@ -32,6 +32,8 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
     assign currentStreamTrimmed = currentStream[4:0];
     assign sequenceValid = (currentSeq == seqs[currentStreamTrimmed] + 1);
 
+    genvar i;
+
     if (!dataIN_last) 
         assign maskedInput = dataIn;
     else begin
@@ -44,7 +46,7 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
         endcase
     end
 
-    for (genvar i = 0; i < 10; i = i+1) begin
+    for (i = 0; i < 10; i = i+1) begin
         if (i != 9)
             assign dataOut[i*32:i*32+31] = outputFinal[i];
         else
@@ -54,10 +56,10 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
     always @ (posedge clk)
         if (!reset_b) begin
             outputPending <= 0;
-            for (genvar i = 0; i <= 31; i = i+1) begin
+            for (i = 0; i <= 31; i = i+1) begin
                 seqs[i] <= 0;
             end
-            for (genvar i = 0; i < 10; i = i + 1) begin
+            for (i = 0; i < 10; i = i + 1) begin
                 outputPrepare[i] <= 0;
             end
             receiverState <= IDLE;
