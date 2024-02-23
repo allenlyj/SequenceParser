@@ -26,6 +26,7 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
     wire [4:0] currentStreamTrimmed;
 
     integer i;
+    genvar geni;
 
     assign dataIn_ready = !(outputPending || receiverState == COMMIT_OUTPUT);
     assign dataOut_val = outputPending;
@@ -47,11 +48,11 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
         endcase
     end
 
-    for (i = 0; i < 10; i = i+1) generate
+    for (geni = 0; geni < 10; geni = geni+1) generate
         if (i != 9)
-            assign dataOut[i*32:i*32+31] = outputFinal[i];
+            assign dataOut[geni*32:geni*32+31] = outputFinal[geni];
         else
-            assign dataOut[i*32:i*32+7] = outputFinal[i][31:24];
+            assign dataOut[geni*32:geni*32+7] = outputFinal[geni][31:24];
     endgenerate
 
     always @ (posedge clk)
