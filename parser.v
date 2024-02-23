@@ -58,10 +58,12 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
     always @ (posedge clk)
         if (!reset_b) begin
             outputPending <= 0;
-            for (i = 0; i <= 31; i = i+1)
+            for (i = 0; i <= 31; i = i+1) begin
                 seqs[i] <= 0;
-            for (i = 0; i < 10; i = i + 1)
-                outputPrepare[i] <= 0;
+            end
+            for (i = 0; i < 10; i = i + 1) begin
+                outputPrepare[i] <= 0
+            end
             receiverState <= IDLE;
             outputPrepare <= 0;
         end else begin
