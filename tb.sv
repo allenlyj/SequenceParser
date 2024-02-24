@@ -2,7 +2,7 @@
 module tb_parser;
 
     //Input signals
-    reg clk = 0, reset = 1'b1, dataInVal = 0, dataOutReady = 0, datainLast = 0;
+    reg clk = 0, reset = 1'b1, dataInVal = 0, dataOutReady = 0, dataInLast = 0;
     reg [31:0] dataIn = 0;
     //Output signals
     wire dataInReady, dataOutVal, packetLost;
@@ -19,10 +19,10 @@ module tb_parser;
         dataInVal = 0;
         dataOutReady = 1'b1;
         forever begin
+            #10ns clk = ~clk;
             #15ns dataInVal = ~dataInVal;
         end
     end
-    always #10ns clk = ~clk;
 
     always @ (posedge clk)
         $display ("T=%0t dataOut=0x%0h", $time, dataOut);
