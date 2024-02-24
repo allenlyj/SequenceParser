@@ -21,6 +21,8 @@ module tb_parser;
         forever begin
             #10ns clk = ~clk;
             #15ns dataInVal = ~dataInVal;
+            #10ns dataOutReady = ~dataOutReady;
+            #10ns dataIn = dataIn + 1;
         end
     end
 
