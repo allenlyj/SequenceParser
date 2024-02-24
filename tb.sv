@@ -10,8 +10,11 @@ module tb_parser;
                         dataOut, dataOutVal, dataOutReady, packetLost);
     initial begin
         clk = 0;
+        dataInVal = 0;
+        dataOutReady = 1'b1;
         forever begin
             #10ns clk = ~clk;
+            #15ns dataInVal = ~dataInVal;
         end
     end
 endmodule
