@@ -1,4 +1,4 @@
-module tb_parser;
+module tb_parser
 
     //Input signals
     reg clk = 0, reset = 1'b1, dataInVal = 0, dataOutReady = 0, datainLast = 0;
@@ -6,8 +6,11 @@ module tb_parser;
     //Output signals
     wire dataInReady, dataOutVal, packetLost;
     wire [0:295] dataOut;
-    parser yaojie(clk, reset, dataIn, dataInVal, dataInReady, dataInLast,
-                        dataOut, dataOutVal, dataOutReady, packetLost);
+    parser yaojie(.clk(clk), .reset_b(reset), 
+                   .dataIn(dataIn), .dataIn_val(dataInVal), 
+                   .dataIn_ready(dataInReady), .dataIN_last(dataInLast),
+                   .dataOut(dataOut), .dataOut_val(dataOutVal),
+                   .dataOut_ready(dataOutReady), .packetLost(packetLost));
     initial begin
         clk = 0;
         dataInVal = 0;
