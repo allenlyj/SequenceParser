@@ -16,22 +16,23 @@ module tb_parser;
 
     always begin
         clk = 1'b0;
-        #5ns
+        #5ns;
         clk = 1'b1;
-        #5ns
+        #5ns;
     end
 
     initial begin
         dataInVal = 0;
         dataOutReady = 1'b1;
-        #10ns clk = ~clk;
+        reset = 1'b0;
+        #50ns reset = 1'b1;
         #15ns dataInVal = ~dataInVal;
         #10ns dataOutReady = ~dataOutReady;
         #10ns dataIn = dataIn + 1;
     end
 
     always @ (posedge clk)
-        $display ("T=%0t dataOut=0x%0h", $time, dataOut);
+        $display ("T=%0t dataOut=0x%0h %x", $time, dataOut, yaojie.seqs[5]);
     always @ (negedge clk)
         $display ("T=%0t dataOut=0x%0h", $time, dataOut);
 endmodule
