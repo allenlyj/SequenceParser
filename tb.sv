@@ -14,18 +14,24 @@ module tb_parser;
                    .dataOut_ready(dataOutReady), .packetLost(packetLost));
     
 
+    always begin
+        clk = 1'b0;
+        #5ns
+        clk = 1'b1;
+        #5ns
+    end
+
     initial begin
-        clk = 0;
         dataInVal = 0;
         dataOutReady = 1'b1;
-        forever begin
-            #10ns clk = ~clk;
-            #15ns dataInVal = ~dataInVal;
-            #10ns dataOutReady = ~dataOutReady;
-            #10ns dataIn = dataIn + 1;
-        end
+        #10ns clk = ~clk;
+        #15ns dataInVal = ~dataInVal;
+        #10ns dataOutReady = ~dataOutReady;
+        #10ns dataIn = dataIn + 1;
     end
 
     always @ (posedge clk)
+        $display ("T=%0t dataOut=0x%0h", $time, dataOut);
+    always @ (negedge clk)
         $display ("T=%0t dataOut=0x%0h", $time, dataOut);
 endmodule
