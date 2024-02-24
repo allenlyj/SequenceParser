@@ -1,4 +1,5 @@
-module tb_parser
+`include "parser.sv"
+module tb_parser;
 
     //Input signals
     reg clk = 0, reset = 1'b1, dataInVal = 0, dataOutReady = 0, datainLast = 0;
