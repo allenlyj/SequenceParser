@@ -30,17 +30,17 @@ module tb_parser;
         automatic int i = 0;
         dataInVal = 1'b0;
         while (i < cycles) begin
+            dataInVal = 1'b1;
+            dataInLast = 1'b0;
+            if (i == 0)
+                dataIn = {lengthLE, streamLE};
+            else if (i == 1)
+                dataIn = seqLE;
+            else
+                dataIn = 32'h01234560 + i;
+            if (i == cycles-1)
+                dataInLast = 1'b1;
             @ (posedge clk) begin
-                dataInVal = 1'b1;
-                dataInLast = 1'b0;
-                if (i == 0)
-                    dataIn = {lengthLE, streamLE};
-                else if (i == 1)
-                    dataIn = seqLE;
-                else
-                    dataIn = 32'h01234560 + i;
-                if (i == cycles-1)
-                    dataInLast = 1'b1;
                 if (dataInReady)
                     i = i + 1;
             end
@@ -61,7 +61,6 @@ module tb_parser;
 
     initial begin
         #400 dataOutReady = 1'b1;
-        #800 $finish;
     end
 
     initial begin
