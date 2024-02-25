@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 `include "parser.sv"
 module tb_parser;
 
@@ -16,21 +17,41 @@ module tb_parser;
 
     always begin
         clk = 1'b0;
-        #5ns;
+        #5;
         clk = 1'b1;
-        #5ns;
+        #5;
+    end
+
+    task sendPacket(input int stream, input int seq, input int length) begin
+        reg[15:0] streamLE = {stream[7:0], stream[15:8]};
+        reg[31:0] seqLE = {seq[7:0], seq[15:8], seq[23:16], seq[31:24]};
+        reg[15:0] lengthLE = {length[7:0], length[15:8]};
+        int cycles = length/4;
+        int i = 0;
+        dataInVal = 1'b1;
+        while (i < cycles) begin
+            @ (posedge clk) begin
+                if (i == 0)
+                    dataIn = {lengthLE, streamLE};
+                else if (i == 1)
+                    dataIn = seqLE;
+                else
+                    dataIn = 32'h01234560 + i;
+                if (dataInReady)
+                    i = i + 1;
+            end
+        dataInVal = 1'b0;
     end
 
     initial begin
-        dataInVal = 0;
-        dataOutReady = 1'b1;
+        $monitor("valid=%d last=%d data=%8x ready=%d", dataInVal, dataInLast, dataIn, dataInReady);
         reset = 1'b0;
         #50ns reset = 1'b1;
-        #15ns dataInVal = ~dataInVal;
-        #10ns dataOutReady = ~dataOutReady;
-        #10ns dataIn = dataIn + 1;
+        sendPacket(12, 1, 20);
+        sendPacket(13, 1, 25);
+        sendPacket(12, 3, 39);
+        #200 $finish;
     end
-
     always @ (posedge clk)
         $display ("T=%0t dataOut=0x%0h %x", $time, dataOut, yaojie.seqs[5]);
     always @ (negedge clk)
