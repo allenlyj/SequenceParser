@@ -45,10 +45,10 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
         end
     end
 
-    assign dataOut = outputPending ? ({outputPrepare[0], outputPrepare[1], outputPrepare[2],
+    assign dataOut = outputPending ? {outputPrepare[0], outputPrepare[1], outputPrepare[2],
                                        outputPrepare[3], outputPrepare[4], outputPrepare[5],
                                        outputPrepare[6], outputPrepare[7], outputPrepare[8],
-                                       outputPrepare[9][31:24]} : 0);
+                                       outputPrepare[9][31:24]} : 0;
     assign packetLost = outputPending ? packetLostReg : 0;
 
     always @ (posedge clk)
@@ -74,7 +74,7 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
                 if (canMoveForward) begin
                     bytesLeft <= bytesLeft - 4;
                     currentSeq <= {dataIn[7:0], dataIn[15:8], dataIn[23:16], dataIn[31:24]};
-                    expectedSeq <= seqs[currentStreamTrimmed] + 1
+                    expectedSeq <= seqs[currentStreamTrimmed] + 1;
                     receiverState <= GET_DATA;
                     currentOutputIndex <= 0;
                 end
