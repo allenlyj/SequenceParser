@@ -23,11 +23,11 @@ module tb_parser;
     end
 
     task sendPacket(input int stream, input int seq, input int length);
-        reg[15:0] streamLE = {stream[7:0], stream[15:8]};
-        reg[31:0] seqLE = {seq[7:0], seq[15:8], seq[23:16], seq[31:24]};
-        reg[15:0] lengthLE = {length[7:0], length[15:8]};
-        int cycles = length/4;
-        int i = 0;
+        automatic reg[15:0] streamLE = {stream[7:0], stream[15:8]};
+        automatic reg[31:0] seqLE = {seq[7:0], seq[15:8], seq[23:16], seq[31:24]};
+        automatic reg[15:0] lengthLE = {length[7:0], length[15:8]};
+        automatic int cycles = length/4;
+        automatic int i = 0;
         dataInVal = 1'b1;
         while (i < cycles) begin
             @ (posedge clk) begin
