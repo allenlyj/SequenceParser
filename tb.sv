@@ -46,6 +46,7 @@ module tb_parser;
 
     initial begin
         $monitor("valid=%d last=%d data=%8x ready=%d", dataInVal, dataInLast, dataIn, dataInReady);
+        $monitor("outValid=%d, outData=%x, packetLost=%d", dataOutVal, dataOut, packetLost);
         reset = 1'b0;
         #50ns reset = 1'b1;
         sendPacket(12, 1, 20);
@@ -53,8 +54,4 @@ module tb_parser;
         sendPacket(12, 3, 39);
         #200 $finish;
     end
-    always @ (posedge clk)
-        $display ("T=%0t dataOut=0x%0h %x", $time, dataOut, yaojie.seqs[5]);
-    always @ (negedge clk)
-        $display ("T=%0t dataOut=0x%0h", $time, dataOut);
 endmodule

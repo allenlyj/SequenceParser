@@ -66,14 +66,14 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
             case(receiverState)
             IDLE:
                 if (canMoveForward) begin
-                    bytesLeft <= dataIn[31:16]-4;
-                    currentStream <= dataIn[15:0];
+                    bytesLeft <= {dataIn[23:16], dataIn[31:24]}-4;
+                    currentStream <= {dataIn[7:0], dataIn[15:8]};
                     receiverState <= GET_2ND_WORD;
                 end
             GET_2ND_WORD:
                 if (canMoveForward) begin
                     bytesLeft <= bytesLeft - 4;
-                    currentSeq <= dataIn;
+                    currentSeq <= {dataIn[7:0], dataIn[15:8], dataIn[23:16], dataIn[31:24]};
                     receiverState <= GET_DATA;
                     currentOutputIndex <= 0;
                 end
