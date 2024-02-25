@@ -40,7 +40,7 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
                 2 : maskedInput = {dataIn[31:16], 16'd0};
                 3 : maskedInput = {dataIn[31:8], 8'd0};
                 4 : maskedInput = dataIn;
-                default : maskedInput = 0; //Bad format, should not happen or should trigger error flag
+                default : maskedInput = 0; $report("Bad length");//Bad format, should not happen or should trigger error flag
             endcase
         end
     end
