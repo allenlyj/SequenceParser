@@ -7,27 +7,26 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
     output [0:295] dataOut;
 
     reg [31:0] outputPrepare [0:9];
-    reg [31:0] outputFinal [0:9];
     reg [31:0] seqs [0:31];
     reg packetLostReg = 0;
     reg outputPending = 0;
     localparam [1:0] IDLE = 0;
     localparam [1:0] GET_2ND_WORD = 1;
     localparam [1:0] GET_DATA = 2;
-    localparam [1:0] COMMIT_OUTPUT = 3;
     reg [1:0] receiverState = IDLE;
     reg [15:0] bytesLeft = 0;
     reg [15:0] currentStream = 0;
     reg [31:0] currentSeq = 0;
+    reg [31:0] expectedSeq = 0;
     reg [3:0] currentOutputIndex = 0;
     wire canMoveForward;
     reg [31:0] maskedInput;
     wire sequenceValid;
     wire [4:0] currentStreamTrimmed;
 
-    assign dataIn_ready = !(outputPending || receiverState == COMMIT_OUTPUT);
+    assign dataIn_ready = !outputPending;
     assign dataOut_val = outputPending;
-    assign packetLost = packetLostReg;
+    
     assign canMoveForward = !outputPending & dataIn_val;
     assign currentStreamTrimmed = currentStream[4:0];
     assign sequenceValid = (currentSeq == seqs[currentStreamTrimmed] + 1);
@@ -46,10 +45,11 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
         end
     end
 
-    for (genvar i = 0; i < 9; i = i+1) begin
-        assign dataOut[i*32:i*32+31] = outputFinal[i];
-    end
-    assign dataOut[288:295] = outputFinal[9][31:24];
+    assign dataOut = outputPending ? ({outputPrepare[0], outputPrepare[1], outputPrepare[2],
+                                       outputPrepare[3], outputPrepare[4], outputPrepare[5],
+                                       outputPrepare[6], outputPrepare[7], outputPrepare[8],
+                                       outputPrepare[9][31:24]} : 0);
+    assign packetLost = outputPending ? packetLostReg : 0;
 
     always @ (posedge clk)
         if (!reset_b) begin
@@ -74,6 +74,7 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
                 if (canMoveForward) begin
                     bytesLeft <= bytesLeft - 4;
                     currentSeq <= {dataIn[7:0], dataIn[15:8], dataIn[23:16], dataIn[31:24]};
+                    expectedSeq <= seqs[currentStreamTrimmed] + 1
                     receiverState <= GET_DATA;
                     currentOutputIndex <= 0;
                 end
@@ -82,24 +83,22 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
                     outputPrepare[currentOutputIndex] <= maskedInput;
                     currentOutputIndex <= currentOutputIndex + 1;
                     bytesLeft <= bytesLeft - 4;
-                    if (dataIN_last)
-                        receiverState <= COMMIT_OUTPUT;
+                    if (dataIN_last) begin
+                        packetLostReg <= (currentSeq == expectedSeq);
+                        outputPending <= 1'b1;
+                        seqs[currentStreamTrimmed] <= currentSeq;
+
+                    end 
                 end
-            COMMIT_OUTPUT: begin
-                receiverState <= IDLE;
-                for (int j = 0; j < 10; j = j+1) begin
-                    outputPrepare[j] <= 32'b0;
-                    outputFinal[j] <= outputPrepare[j];
-                end
-                seqs[currentStreamTrimmed] <= currentSeq;
-                packetLostReg <= !sequenceValid;
-                outputPending <= 1'b1;
-            end
+            default : receiverState <= IDLE; //Something wrong
             endcase
 
             if (outputPending & dataOut_ready) begin
                 outputPending <= 1'b0;
                 packetLostReg <= 1'b0;
+                for (int j = 0; j < 10; j = j+1) begin
+                    outputPrepare[j] <= 32'b0;
+                end
             end
         end
 
