@@ -57,11 +57,7 @@ module tb_parser;
     end
 
     initial begin
-        $monitor("valid=%d last=%d data=%8x ready=%d", dataInVal, dataInLast, dataIn, dataInReady);
-    end
-
-    initial begin
-        $monitor("outValid=%d, outData=%x, packetLost=%d", dataOutVal, dataOut, packetLost);
+        $monitor("valid=%d last=%d data=%8x ready=%d outValid=%d, outData=%x, packetLost=%d", dataInVal, dataInLast, dataIn, dataInReady, dataOutVal, dataOut, packetLost);
     end
 endmodule
 
