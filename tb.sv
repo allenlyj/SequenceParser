@@ -45,7 +45,7 @@ module tb_parser;
                     i = i + 1;
             end
         end
-        dataInVal = 1'b0;
+        @ (posedge clk);
     endtask
 
     initial begin
