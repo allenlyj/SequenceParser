@@ -31,12 +31,15 @@ module tb_parser;
         dataInVal = 1'b1;
         while (i < cycles) begin
             @ (posedge clk) begin
+                dataInLast = 1'b0;
                 if (i == 0)
                     dataIn = {lengthLE, streamLE};
                 else if (i == 1)
                     dataIn = seqLE;
                 else
                     dataIn = 32'h01234560 + i;
+                if (i == cycles-1)
+                    dataInLast = 1'b1;
                 if (dataInReady)
                     i = i + 1;
             end
@@ -45,8 +48,6 @@ module tb_parser;
     endtask
 
     initial begin
-        $monitor("valid=%d last=%d data=%8x ready=%d", dataInVal, dataInLast, dataIn, dataInReady);
-        $monitor("outValid=%d, outData=%x, packetLost=%d", dataOutVal, dataOut, packetLost);
         reset = 1'b0;
         #50ns reset = 1'b1;
         sendPacket(12, 1, 20);
@@ -54,4 +55,13 @@ module tb_parser;
         sendPacket(12, 3, 39);
         #200 $finish;
     end
+
+    initial begin
+        $monitor("valid=%d last=%d data=%8x ready=%d", dataInVal, dataInLast, dataIn, dataInReady);
+    end
+
+    initial begin
+        $monitor("outValid=%d, outData=%x, packetLost=%d", dataOutVal, dataOut, packetLost);
+    end
 endmodule
+
