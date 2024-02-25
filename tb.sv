@@ -22,7 +22,7 @@ module tb_parser;
         #5;
     end
 
-    task sendPacket(input int stream, input int seq, input int length) begin
+    task sendPacket(input int stream, input int seq, input int length);
         reg[15:0] streamLE = {stream[7:0], stream[15:8]};
         reg[31:0] seqLE = {seq[7:0], seq[15:8], seq[23:16], seq[31:24]};
         reg[15:0] lengthLE = {length[7:0], length[15:8]};
@@ -40,8 +40,9 @@ module tb_parser;
                 if (dataInReady)
                     i = i + 1;
             end
+        end
         dataInVal = 1'b0;
-    end
+    endtask
 
     initial begin
         $monitor("valid=%d last=%d data=%8x ready=%d", dataInVal, dataInLast, dataIn, dataInReady);
