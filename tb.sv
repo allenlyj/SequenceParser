@@ -28,9 +28,10 @@ module tb_parser;
         automatic reg[15:0] lengthLE = {length[7:0], length[15:8]};
         automatic int cycles = length/4;
         automatic int i = 0;
-        dataInVal = 1'b1;
+        dataInVal = 1'b0;
         while (i < cycles) begin
             @ (posedge clk) begin
+                dataInVal = 1'b1;
                 dataInLast = 1'b0;
                 if (i == 0)
                     dataIn = {lengthLE, streamLE};
