@@ -50,9 +50,11 @@ module tb_parser;
     endtask
 
     task report();
-        always @ (posedge clk) begin
-            if (dataOutVal && dataOutReady)
-                $display("Valid output data=%x packetLost=%d", dataOut, packetLost);
+        while (1) begin
+            @ (posedge clk) begin
+                if (dataOutVal && dataOutReady)
+                    $display("Valid output data=%x packetLost=%d", dataOut, packetLost);
+            end
         end
     endtask
 
