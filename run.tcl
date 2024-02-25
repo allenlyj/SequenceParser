@@ -9,4 +9,4 @@ config wave -signalnamewidth 1
 add wave -group DUT /tb_parser/*
 
 do wave.do
-run 20 us
+run 2 us

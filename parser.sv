@@ -87,7 +87,7 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
                         packetLostReg <= (currentSeq == expectedSeq);
                         outputPending <= 1'b1;
                         seqs[currentStreamTrimmed] <= currentSeq;
-
+                        receiverState <= IDLE;
                     end 
                 end
             default : receiverState <= IDLE; //Something wrong

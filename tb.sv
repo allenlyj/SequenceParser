@@ -49,16 +49,28 @@ module tb_parser;
         dataInLast = 1'b0;
     endtask
 
+    task report();
+        always @ (posedge clk) begin
+            if (dataOutVal && dataOutReady)
+                $display("Valid output data=%x packetLost=%d", dataOut, packetLost);
+        end
+    endtask
+
     initial begin
         reset = 1'b0;
         #50ns reset = 1'b1;
         sendPacket(12, 1, 20);
         sendPacket(13, 1, 25);
-        sendPacket(12, 3, 39);
+        sendPacket(14, 3, 39);
+        sendPacket(14, 4, 44);
     end
 
     initial begin
         #400 dataOutReady = 1'b1;
+    end
+
+    initial begin
+        report();
     end
 
     initial begin
