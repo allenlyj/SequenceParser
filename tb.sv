@@ -45,7 +45,10 @@ module tb_parser;
                     i = i + 1;
             end
         end
-        @ (posedge clk);
+        @ (posedge clk) begin
+            dataInVal = 1'b0;
+            dataInLast = 1'b0;
+        end
     endtask
 
     initial begin
@@ -54,7 +57,11 @@ module tb_parser;
         sendPacket(12, 1, 20);
         sendPacket(13, 1, 25);
         sendPacket(12, 3, 39);
-        #200 $finish;
+    end
+
+    initial begin
+        #400 dataOutReady = 1'b1;
+        #800 $finish;
     end
 
     initial begin
