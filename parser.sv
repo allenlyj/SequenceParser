@@ -77,12 +77,17 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
                 end
             GET_2ND_WORD:
                 if (canMoveForward) begin
-                    bytesLeft <= bytesLeft - 4;
-                    currentSeq <= {dataIn[7:0], dataIn[15:8], dataIn[23:16], dataIn[31:24]};
-                    nextExpectedSeq <= {dataIn[7:0], dataIn[15:8], dataIn[23:16], dataIn[31:24]}+1; //Break write and increment to 2 differrent cycles
-                    expectedSeq <= seqs[currentStreamTrimmed];
-                    receiverState <= GET_DATA;
-                    currentOutputIndex <= 0;
+                    if (dataIN_last)
+                        $display("Terrible short format, recover to IDLE");
+                        receiverState <= IDLE;
+                    else begin
+                        bytesLeft <= bytesLeft - 4;
+                        currentSeq <= {dataIn[7:0], dataIn[15:8], dataIn[23:16], dataIn[31:24]};
+                        nextExpectedSeq <= {dataIn[7:0], dataIn[15:8], dataIn[23:16], dataIn[31:24]}+1; //Break write and increment to 2 differrent cycles
+                        expectedSeq <= seqs[currentStreamTrimmed];
+                        receiverState <= GET_DATA;
+                        currentOutputIndex <= 0;
+                    end
                 end
             GET_DATA:
                 if (canMoveForward) begin
