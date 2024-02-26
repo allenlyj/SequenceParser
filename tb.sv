@@ -22,11 +22,13 @@ module tb_parser;
         #5;
     end
 
-    task sendPacket(input int stream, input int seq, input int length);
+    task sendPacket(input int stream, input int seq, input int length, input badLength=0);
         automatic reg[15:0] streamLE = {stream[7:0], stream[15:8]};
         automatic reg[31:0] seqLE = {seq[7:0], seq[15:8], seq[23:16], seq[31:24]};
         automatic reg[15:0] lengthLE = {length[7:0], length[15:8]};
         automatic int cycles = (length % 4 == 0) ? length/4 : length/4+1;
+        if (badLength)
+            cycle = cycle + 1;
         automatic int i = 0;
         dataInVal = 1'b0;
         while (i < cycles) begin
@@ -63,13 +65,16 @@ module tb_parser;
         reset = 1'b0;
         #50ns reset = 1'b1;
         sendPacket(12, 0, 20);
-        sendPacket(13, 0, 25);
-        sendPacket(14, 0, 39);
+        sendPacket(13, 0, 21);
+        sendPacket(14, 0, 22);
         #23
-        sendPacket(14, 2, 45);
+        sendPacket(14, 2, 23);
         #9
-        sendPacket(12, 1, 22);
+        sendPacket(12, 1, 45);
         sendPacket(14, 3, 47);
+        sendPacket(15, 5, 44);
+        #45
+        sendPacket(15, 6, 43, 1);
     end
 
     //Model random receiver side blocking futher operation
