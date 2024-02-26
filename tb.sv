@@ -62,14 +62,21 @@ module tb_parser;
     initial begin
         reset = 1'b0;
         #50ns reset = 1'b1;
-        sendPacket(12, 1, 20);
-        sendPacket(13, 1, 25);
-        sendPacket(14, 3, 39);
-        sendPacket(14, 4, 44);
+        sendPacket(12, 0, 20);
+        sendPacket(13, 0, 25);
+        sendPacket(14, 0, 39);
+        #23
+        sendPacket(14, 2, 45);
+        #9
+        sendPacket(12, 1, 22);
+        sendPacket(14, 3, 47);
     end
 
+    //Model random receiver side blocking futher operation
     initial begin
-        #400 dataOutReady = 1'b1;
+        #252 dataOutReady = 1'b1;
+        #88 dataOutReady = 1'b0;
+        #155 dataOutReady = 1'b1;
     end
 
     initial begin

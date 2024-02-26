@@ -24,6 +24,10 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
     reg [31:0] maskedInput;
     wire sequenceValid;
     wire [4:0] currentStreamTrimmed;
+    
+    // Extra logic to detect bad length
+    reg lengthOverflow;
+    reg badLengthReg;
 
     assign dataIn_ready = !outputPending;
     assign dataOut_val = outputPending;
@@ -40,19 +44,15 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
                 1 : maskedInput = {dataIn[31:24], 24'd0};
                 2 : maskedInput = {dataIn[31:16], 16'd0};
                 3 : maskedInput = {dataIn[31:8], 8'd0};
-                4 : maskedInput = dataIn;
-                default : begin 
-                    maskedInput = 32'hFFFFFFFF; 
-                    $report("Bad length");//Bad format, should not happen or should trigger error flag
-                end
+                default : maskedInput = dataIn;
             endcase
         end
     end
 
-    assign dataOut = outputPending ? {outputPrepare[0], outputPrepare[1], outputPrepare[2],
-                                       outputPrepare[3], outputPrepare[4], outputPrepare[5],
-                                       outputPrepare[6], outputPrepare[7], outputPrepare[8],
-                                       outputPrepare[9][31:24]} : 0;
+    assign dataOut = outputPending ? (badLengthReg ? {37{8'hFF}} : {outputPrepare[0], outputPrepare[1], outputPrepare[2],
+                                                           outputPrepare[3], outputPrepare[4], outputPrepare[5],
+                                                           outputPrepare[6], outputPrepare[7], outputPrepare[8],
+                                                           outputPrepare[9][31:24]}) : 0;
     assign packetLost = outputPending ? packetLostReg : 0;
 
     always @ (posedge clk)
@@ -73,6 +73,7 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
                     bytesLeft <= {dataIn[23:16], dataIn[31:24]}-4;
                     currentStream <= {dataIn[7:0], dataIn[15:8]};
                     receiverState <= GET_2ND_WORD;
+                    lengthOverflow <= {dataIn[23:16], dataIn[31:24]} > 45;
                 end
             GET_2ND_WORD:
                 if (canMoveForward) begin
@@ -93,14 +94,20 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
                         outputPending <= 1'b1;
                         seqs[currentStreamTrimmed] <= nextExpectedSeq;
                         receiverState <= IDLE;
+                        badLengthReg <= bytesLeft == 0 || bytesLeft >4 || lengthOverflow;
+                        lengthOverflow <= 1'b0;
                     end 
                 end
             default : receiverState <= IDLE; //Something wrong
             endcase
 
             if (outputPending & dataOut_ready) begin
+                if (badLengthReg) begin
+                    $display("Bad length detected");
+                end
                 outputPending <= 1'b0;
                 packetLostReg <= 1'b0;
+                badLengthReg <= 1'b0;
                 for (int j = 0; j < 10; j = j+1) begin
                     outputPrepare[j] <= 32'b0;
                 end
