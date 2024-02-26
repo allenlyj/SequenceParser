@@ -78,7 +78,7 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
             GET_2ND_WORD:
                 if (canMoveForward) begin
                     if (dataIN_last) begin
-                        $display("Terrible short format, recover to IDLE");
+                        $display("Terrible short format, ignore seq checks, recover to IDLE");
                         receiverState <= IDLE;
                         outputPending <= 1'b1;
                         badLengthReg <= 1'b1;
