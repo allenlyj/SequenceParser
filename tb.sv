@@ -48,6 +48,7 @@ module tb_parser;
                 if (dataInReady)
                     i = i + 1;
             end
+            #1ps; //Help Xilinx simulator that does not handle delta T correctly
         end
         dataInVal = 1'b0;
         dataInLast = 1'b0;
