@@ -65,6 +65,9 @@ module tb_parser;
     initial begin
         reset = 1'b0;
         #50ns reset = 1'b1;
+        //Total of 10 packets, 4th and 7th packet has seq gap
+        //6th and 8th packet has bad length, still output bad data
+        //9th packet too short also output bad data, parser state machine restart
         sendPacket(12, 0, 20);
         sendPacket(12, 1, 21);
         sendPacket(12, 2, 22);
@@ -76,6 +79,8 @@ module tb_parser;
         sendPacket(15, 5, 44);
         #45
         sendPacket(15, 6, 43, 1);
+        sendPacket(14, 2, 9,1)
+        sendPacket(14, 3, 15);
     end
 
     //Model random receiver side blocking futher operation

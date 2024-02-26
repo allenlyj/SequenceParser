@@ -80,6 +80,8 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
                     if (dataIN_last) begin
                         $display("Terrible short format, recover to IDLE");
                         receiverState <= IDLE;
+                        outputPending <= 1'b1;
+                        badLengthReg <= 1'b1;
                     end else begin
                         bytesLeft <= bytesLeft - 4;
                         currentSeq <= {dataIn[7:0], dataIn[15:8], dataIn[23:16], dataIn[31:24]};
