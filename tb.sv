@@ -71,14 +71,14 @@ module tb_parser;
         sendPacket(12, 1, 21);
         sendPacket(12, 2, 22);
         #23
-        sendPacket(14, 2, 23);
+        sendPacket(14, 2, 23);//Gap
         #9
         sendPacket(12, 3, 45);
-        sendPacket(14, 3, 47);
-        sendPacket(15, 5, 44);
+        sendPacket(14, 3, 71);//Bad length too long
+        sendPacket(15, 5, 44);//gap
         #45
-        sendPacket(15, 6, 43, 1);
-        sendPacket(14, 2, 9,1);
+        sendPacket(15, 6, 43, 1);//Bad length, length field and cycles not match
+        sendPacket(14, 2, 9,1);//Bad length, too short
         sendPacket(14, 4, 15);
     end
 
