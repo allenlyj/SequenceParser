@@ -22,13 +22,14 @@ module tb_parser;
         #5;
     end
 
+    //Send packet to module; can handle dataIn_Ready handshake; Can fake message with wrong length (cycles not matching msgLen field) )
     task sendPacket(input int stream, input int seq, input int length, input badLength=0);
         automatic reg[15:0] streamLE = {stream[7:0], stream[15:8]};
         automatic reg[31:0] seqLE = {seq[7:0], seq[15:8], seq[23:16], seq[31:24]};
         automatic reg[15:0] lengthLE = {length[7:0], length[15:8]};
         automatic int cycles = (length % 4 == 0) ? length/4 : length/4+1;
         if (badLength)
-            cycle = cycle + 1;
+            cycles = cycles + 1;
         automatic int i = 0;
         dataInVal = 1'b0;
         while (i < cycles) begin
