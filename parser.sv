@@ -32,7 +32,7 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
     assign currentStreamTrimmed = currentStream[4:0];
     assign sequenceValid = (currentSeq == seqs[currentStreamTrimmed] + 1);
 
-    always @ (dataIN_last or dataIn) begin
+    always @ (dataIN_last or dataIn or bytesLeft) begin
         if (!dataIN_last) 
             maskedInput = dataIn;
         else begin
