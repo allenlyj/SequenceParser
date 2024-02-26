@@ -6,8 +6,8 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
     output dataIn_ready, dataOut_val, packetLost;
     output [0:295] dataOut;
 
-    reg [31:0] outputPrepare [0:9];
-    reg [31:0] seqs [0:31];
+    reg [31:0] outputPrepare [0:9]; //Prepare (aggregate incoming stream)
+    reg [31:0] seqs [0:31]; //Stores next sequence expected for each stream
     reg packetLostReg = 0;
     reg outputPending = 0;
     localparam [1:0] IDLE = 0;
@@ -18,6 +18,7 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
     reg [15:0] currentStream = 0;
     reg [31:0] currentSeq = 0;
     reg [31:0] expectedSeq = 0;
+    reg [31:0] nextExpectedSeq = 0;
     reg [3:0] currentOutputIndex = 0;
     wire canMoveForward;
     reg [31:0] maskedInput;
@@ -77,7 +78,8 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
                 if (canMoveForward) begin
                     bytesLeft <= bytesLeft - 4;
                     currentSeq <= {dataIn[7:0], dataIn[15:8], dataIn[23:16], dataIn[31:24]};
-                    expectedSeq <= seqs[currentStreamTrimmed] + 1;
+                    nextExpectedSeq <= {dataIn[7:0], dataIn[15:8], dataIn[23:16], dataIn[31:24]}+1; //Break write and increment to 2 differrent cycles
+                    expectedSeq <= seqs[currentStreamTrimmed];
                     receiverState <= GET_DATA;
                     currentOutputIndex <= 0;
                 end
@@ -89,7 +91,7 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
                     if (dataIN_last) begin
                         packetLostReg <= (currentSeq != expectedSeq);
                         outputPending <= 1'b1;
-                        seqs[currentStreamTrimmed] <= currentSeq;
+                        seqs[currentStreamTrimmed] <= nextExpectedSeq;
                         receiverState <= IDLE;
                     end 
                 end
