@@ -67,13 +67,13 @@ module tb_parser;
         #50ns reset = 1'b1;
         //Total of 10 packets, 4th and 7th packet has seq gap
         //6th, 8th and 9th packet have bad length, still output bad data
-        sendPacket(12, 0, 20);
-        sendPacket(12, 1, 21);
-        sendPacket(12, 2, 22);
+        sendPacket(12, 1, 20);
+        sendPacket(12, 2, 21);
+        sendPacket(12, 3, 22);
         #23
         sendPacket(14, 2, 23);//Gap
         #9
-        sendPacket(12, 3, 45);
+        sendPacket(12, 4, 45);
         sendPacket(14, 3, 71);//Bad length too long
         sendPacket(15, 5, 44);//gap
         #45

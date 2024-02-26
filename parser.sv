@@ -59,7 +59,7 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
         if (!reset_b) begin
             outputPending <= 0;
             for (int j = 0; j <= 31; j = j+1) begin
-                seqs[j] <= 0;
+                seqs[j] <= 1;
             end
             for (int j = 0; j < 10; j = j + 1) begin
                 outputPrepare[j] <= 0;
