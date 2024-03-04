@@ -4,8 +4,8 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
     input clk, reset_b, dataIn_val, dataIN_last, dataOut_ready;
     input [31:0] dataIn;
     output dataIn_ready, dataOut_val, packetLost;
-    output [0:295] dataOut;
-
+    //output reg[0:295] dataOut;
+    output[0:295] dataOut;
     reg [31:0] outputPrepare [0:9]; //Prepare (aggregate incoming stream)
     reg [31:0] seqs [0:31]; //Stores next sequence expected for each stream
     reg packetLostReg = 0;
@@ -48,6 +48,19 @@ module parser(clk, reset_b, dataIn, dataIn_val, dataIn_ready, dataIN_last, //rec
             endcase
         end
     end
+    /*
+    always @ (*) begin
+        for (int i = 0; i < 9; i++) begin
+            if (outputPending) begin
+                if (!badLengthReg)
+                    dataOut[32*i +:32] = outputPrepare[i];
+                else
+                    dataOut[32*i +:32] = 32'hFFFFFFFF;
+            end else
+                dataOut[32*i +:32] = 0;
+        end
+        dataOut[288:295] = outputPending ? (badLengthReg ? 8'hFF : outputPrepare[9][31:24]) : 0;
+    end*/
 
     assign dataOut = outputPending ? (badLengthReg ? {37{8'hFF}} : {outputPrepare[0], outputPrepare[1], outputPrepare[2],
                                                            outputPrepare[3], outputPrepare[4], outputPrepare[5],
